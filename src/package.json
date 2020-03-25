@@ -1,8 +1,8 @@
 {
-	"name": "nativescript-nativescript-ng-bottomsheet",
+	"name": "nativescript-ng-bottomsheet",
 	"version": "1.0.0",
 	"description": "Your awesome NativeScript plugin.",
-	"main": "nativescript-ng-bottomsheet",
+	"main": "ng-bottomsheet",
 	"typings": "index.d.ts",
 	"nativescript": {
 		"platforms": {
@@ -12,7 +12,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Nikstn/nativescript-nativescript-ng-bottomsheet.git"
+		"url": "https://github.com/Nikstn/nativescript-ng-bottomsheet.git"
 	},
 	"scripts": {
 		"tsc": "npm i && tsc",
@@ -41,10 +41,10 @@
 		"email": "youremail@yourdomain.com"
 	},
 	"bugs": {
-		"url": "https://github.com/Nikstn/nativescript-nativescript-ng-bottomsheet/issues"
+		"url": "https://github.com/Nikstn/nativescript-ng-bottomsheet/issues"
 	},
 	"license": "Apache-2.0",
-	"homepage": "https://github.com/Nikstn/nativescript-nativescript-ng-bottomsheet",
+	"homepage": "https://github.com/Nikstn/nativescript-ng-bottomsheet",
 	"devDependencies": {
 		"tns-core-modules": "^6.0.0",
 		"tns-platform-declarations": "^6.0.0",
