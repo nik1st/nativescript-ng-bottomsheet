@@ -13,7 +13,7 @@
   "repository": "<fill-your-repository-here>",
   "dependencies": {
     "@nativescript/theme": "~2.2.0",
-    "nativescript-nativescript-ng-bottomsheet": "file:../src",
+    "nativescript-ng-bottomsheet": "file:../src",
     "tns-core-modules": "~6.2.0"
   },
   "devDependencies": {

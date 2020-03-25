@@ -1,5 +1,5 @@
-import { NativescriptNgBottomsheet } from 'nativescript-nativescript-ng-bottomsheet';
-console.log(new NativescriptNgBottomsheet().message);
+import { NgBottomsheet } from 'nativescript-ng-bottomsheet';
+console.log(new NgBottomsheet().message);
 import { Component } from "@angular/core";
 
 @Component({
