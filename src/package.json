@@ -54,6 +54,8 @@
 		"tslint": "^5.12.1",
 		"semver": "^5.6.0"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"nativescript-gesturehandler": "^0.1.7"
+	},
 	"bootstrapper": "nativescript-plugin-seed"
 }

@@ -1,12 +1,14 @@
 <Page
-    navigatingTo="onNavigatingTo" 
-    xmlns="http://schemas.nativescript.org/tns.xsd">
-    
+    navigatingTo="onNavigatingTo"
+    xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:ui="nativescript-ng-bottomsheet/ng-bottomsheet">
+
     <ActionBar>
         <Label text="Home"></Label>
     </ActionBar>
 
     <GridLayout>
         <!-- Add your page content here -->
+        <ui:BottomSheet />
     </GridLayout>
 </Page>

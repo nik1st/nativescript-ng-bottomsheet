@@ -1,5 +1,4 @@
-import { NgBottomsheet } from 'nativescript-ng-bottomsheet';
-console.log(new NgBottomsheet().message);
+import { BottomSheet } from "nativescript-ng-bottomsheet/ng-bottomsheet";
 /*
 In NativeScript, a file with the same name as an XML file is known as
 a code-behind file. The code-behind is a great place to place your view

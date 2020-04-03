@@ -1,5 +1,5 @@
-import { NgBottomsheet } from 'nativescript-ng-bottomsheet';
-console.log(new NgBottomsheet().message);
+import { registerElement } from "nativescript-angular/element-registry";
+registerElement('NgBottomSheet', () => require('nativescript-ng-bottomsheet').BottomSheet);
 import { Component } from "@angular/core";
 
 @Component({
