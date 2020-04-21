@@ -9,6 +9,6 @@
 
     <GridLayout>
         <!-- Add your page content here -->
-        <ui:BottomSheet />
+        <ui:BottomSheet stateChange="onStateChange" />
     </GridLayout>
 </Page>

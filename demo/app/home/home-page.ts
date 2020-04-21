@@ -1,4 +1,3 @@
-import { BottomSheet } from "nativescript-ng-bottomsheet/ng-bottomsheet";
 /*
 In NativeScript, a file with the same name as an XML file is known as
 a code-behind file. The code-behind is a great place to place your view
@@ -13,4 +12,9 @@ export function onNavigatingTo(args: NavigatedData) {
     const page = <Page>args.object;
 
     page.bindingContext = new HomeViewModel();
+}
+
+export function onStateChange(args) {
+    const {eventName, object, state} = args;
+    console.log(state);
 }

@@ -32,7 +32,8 @@
 	},
 	"keywords": [
 		"NativeScript",
-		"JavaScript",
+		"Angular",
+		"TypeScript",
 		"Android",
 		"iOS"
 	],
@@ -54,8 +55,8 @@
 		"tslint": "^5.12.1",
 		"semver": "^5.6.0"
 	},
+	"bootstrapper": "nativescript-plugin-seed",
 	"dependencies": {
-		"nativescript-gesturehandler": "^0.1.7"
-	},
-	"bootstrapper": "nativescript-plugin-seed"
+		"rxjs": "^6.5.5"
+	}
 }

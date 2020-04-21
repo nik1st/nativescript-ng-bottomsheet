@@ -1,6 +1,5 @@
 import * as app from "tns-core-modules/application";
 
-// global.registerModule("nativescript-ng-bottomsheet", () => require(".../node_modules/nativescript-ng-bottomsheet/meme"))
 app.run({ moduleName: "app-root" });
 
 /*

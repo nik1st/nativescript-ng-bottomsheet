@@ -4,6 +4,5 @@
 
 <GridLayout>
     <!-- Add your page content here -->
-    <NgBottomSheet backgroundColor="red" verticalAlignment="bottom">
-    </NgBottomSheet>
+    <NgBottomSheet (stateChange)="onStateChange($event)"></NgBottomSheet>
 </GridLayout>
