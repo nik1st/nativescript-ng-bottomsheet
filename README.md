@@ -40,9 +40,13 @@ import { BottomSheet } from 'nativescript-ng-bottomsheet/ng-bottomsheet';
 registerElement('BottomSheet', () => BottomSheet);
 ```
 
+#### HTML
+
 ``` html
     <NgBottomSheet (stateChange)="onStateChange($event)"></NgBottomSheet>
 ```
+
+#### Typescript
 
 ``` typescript
     onStateChange(args) {
