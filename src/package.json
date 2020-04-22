@@ -1,7 +1,7 @@
 {
 	"name": "nativescript-ng-bottomsheet",
-	"version": "1.0.0",
-	"description": "Your awesome NativeScript plugin.",
+	"version": "0.0.1",
+	"description": "Nativescript Angular Bottom Sheet plugin",
 	"main": "ng-bottomsheet",
 	"typings": "index.d.ts",
 	"nativescript": {
@@ -38,8 +38,8 @@
 		"iOS"
 	],
 	"author": {
-		"name": "Your Name",
-		"email": "youremail@yourdomain.com"
+		"name": "Nikstn",
+		"email": "nikist99@gmail.com"
 	},
 	"bugs": {
 		"url": "https://github.com/Nikstn/nativescript-ng-bottomsheet/issues"

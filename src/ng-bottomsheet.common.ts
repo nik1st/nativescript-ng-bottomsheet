@@ -21,25 +21,44 @@ export class BottomSheetBase extends GridLayout {
         this.height = { unit: "dip", value: Screen.mainScreen.heightDIPs * 20 / 100 };
         this.verticalAlignment = "bottom";
 
-        if (Application.android) {
+        // if (Application.android) {
             this.backgroundColor = "white";
             this.androidElevation = 12;
             this.borderTopLeftRadius = 20;
             this.borderTopRightRadius = 20;
-        } else {
-            this.on("loaded", () => {
-                this.ios.layer.backgroundColor = UIColor.whiteColor.CGColor;
-                this.ios.layer.shadowOffset = CGSizeMake(0, 1);
-                this.ios.layer.shadowOpacity = .4;
-                this.ios.layer.shadowRadius = 2;
-                this.ios.layer.cornerRadius = 20;
-            });
-        }
-
+        // } else {
+        //    this.on("loaded", () => {
+                // let shadowLayer = CAShapeLayer.alloc().init();
+                // let cgPath = UIBezierPath.bezierPathWithRoundedRectByRoundingCornersCornerRadii(this.ios.bounds, 3, CGSizeMake(8, 8)).CGPath;
+                // shadowLayer.path = cgPath;
+                // shadowLayer.fillColor = UIColor.whiteColor.CGColor;
+                // shadowLayer.shadowColor = UIColor.blackColor.CGColor;
+                // shadowLayer.shadowPath = cgPath;
+                // shadowLayer.shadowOffset = CGSizeMake(2.6, 2.6);
+                // shadowLayer.shadowOpacity = 0.8;
+                // shadowLayer.shadowRadius = 8;
+                // this.ios.layer.masksToBounds = true;
+                // this.ios.layer.backgroundColor = UIColor.whiteColor.CGColor;
+                // this.ios.layer.maskedCorners = 3;
+                // this.ios.layer.shadowOffset = CGSizeMake(0, 1);
+                // this.ios.layer.shadowOpacity = .4;
+                // this.ios.layer.shadowRadius = 5;
+                // this.ios.layer.cornerRadius = 20;
+                // this.ios.layer.addSublayer(shadowLayer);
+            // });
+        // }
         const bottomSheetDragView = new StackLayout();
         this.addChild(bottomSheetDragView);
         bottomSheetDragView.addChild(new StackLayout());
-        bottomSheetDragView.getChildAt(0).addCss("StackLayout { background-color: #a0a0a0; height: 5; width: 50; margin-top: 10; border-radius: 8; }");
+        bottomSheetDragView.getChildAt(0).addCss(
+            `StackLayout {
+                background-color: #a0a0a0;
+                height: 5;
+                width: 50;
+                margin-top: 10;
+                border-radius: 8;
+            }`
+        );
 
         this.getChildAt(0).on(GestureTypes.pan, (args: PanGestureEventData) => {
             const { state, deltaY  } = args;
@@ -47,10 +66,10 @@ export class BottomSheetBase extends GridLayout {
                 case GestureStateTypes.began :
                     this.stateDIPs = this.getActualSize().height;
                     if (this.state === BottomSheetState.EXPANDED) {
-                        if (Application.android) {
+                        // if (Application.android) {
                             this.borderTopLeftRadius = 20;
                             this.borderTopRightRadius = 20;
-                        }
+                        // }
                     }
                     break;
 
@@ -78,26 +97,26 @@ export class BottomSheetBase extends GridLayout {
             case BottomSheetState.COLLAPSED :
                 newStateDIPs = Screen.mainScreen.heightDIPs * 20 / 100;
                 this.state = BottomSheetState.COLLAPSED;
-                if (Application.android) {
+                // if (Application.android) {
                     this.borderTopLeftRadius = 20;
                     this.borderTopRightRadius = 20;
-                }
+                // }
                 break;
             case BottomSheetState.HALP_EXPANDED :
                 newStateDIPs = Screen.mainScreen.heightDIPs * 50 / 100;
                 this.state = BottomSheetState.HALP_EXPANDED;
-                if (Application.android) {
+                // if (Application.android) {
                     this.borderTopLeftRadius = 20;
                     this.borderTopRightRadius = 20;
-                }
+                // }
                 break;
             case BottomSheetState.EXPANDED :
-                newStateDIPs = Screen.mainScreen.heightDIPs * 100 / 100;
+                newStateDIPs = Screen.mainScreen.heightDIPs * 105 / 100;
                 this.state = BottomSheetState.EXPANDED;
-                if (Application.android) {
+                // if (Application.android) {
                     this.borderTopLeftRadius = 0;
                     this.borderTopRightRadius = 0;
-                }
+                // }
                 break;
         }
         animate(200, [{

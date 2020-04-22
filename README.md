@@ -1,40 +1,75 @@
-# nativescript-ng-bottomsheet
-
-Add your plugin badges here. See [nativescript-urlhandler](https://github.com/hypery2k/nativescript-urlhandler) for example.
-
-Then describe what's the purpose of your plugin. 
-
-In case you develop UI plugin, this is where you can add some screenshots.
-
-## (Optional) Prerequisites / Requirements
-
-Describe the prerequisites that the user need to have installed before using your plugin. See [nativescript-firebase plugin](https://github.com/eddyverbruggen/nativescript-plugin-firebase) for example.
+# NativeScript Angular Bottom Sheet Plugin
 
 ## Installation
 
-Describe your plugin installation steps. Ideally it would be something like:
-
-```javascript
+```
 tns plugin add nativescript-ng-bottomsheet
 ```
 
 ## Usage 
+_iOS note: Shadows will be added later. :(_
 
-Describe any usage specifics for your plugin. Give examples for Android, iOS, Angular if needed. See [nativescript-drop-down](https://www.npmjs.com/package/nativescript-drop-down) for example.
-	
-	```javascript
-    Usage code snippets here
-    ```)
+The bottom sheet plugin extends a `GridLayout` and exposes a simple `BottomSheet` class with property `state` and method named `setState(state)`. Also plugin exposes interface `BottomSheetState` that helps to manage state of Bottom Sheet.
 
-## API
+### XML
+``` xml
+    <Page
+        navigatingTo="onNavigatingTo"
+        xmlns="http://schemas.nativescript.org/tns.xsd"
+        xmlns:ui="nativescript-ng-bottomsheet/ng-bottomsheet">
 
-Describe your plugin methods and properties here. See [nativescript-feedback](https://github.com/EddyVerbruggen/nativescript-feedback) for example.
-    
-| Property | Default | Description |
-| --- | --- | --- |
-| some property | property default value | property description, default values, etc.. |
-| another property | property default value | property description, default values, etc.. |
-    
+        <ActionBar>
+            <Label text="Home"></Label>
+        </ActionBar>
+
+        <GridLayout>
+            <!-- Add your page content here -->
+            <ui:BottomSheet stateChange="onStateChange" />
+        </GridLayout>
+    </Page>
+```
+
+
+### Angular
+
+Don't forget to register the component in `app.module.ts`.
+
+``` typescript
+import { registerElement } from 'nativescript-angular/element-registry';
+import { BottomSheet } from 'nativescript-ng-bottomsheet/ng-bottomsheet';
+registerElement('BottomSheet', () => BottomSheet);
+```
+
+``` html
+    <NgBottomSheet (stateChange)="onStateChange($event)"></NgBottomSheet>
+```
+
+``` typescript
+    onStateChange(args) {
+        const {eventName, object, state} = args;
+        console.log(state); // it represents one of BottomSheetState values
+
+        // If you want to change state via code, use method setState()
+        // object.setState(BottomSheetState.COLLAPSED);
+        // object.setState(BottomSheetState.HALF_EXPANDED);
+        // object.setState(BottomSheetState.EXPANDED);
+    }
+```
+
+# To run the Angular demo
+
+```
+cd src
+npm run demo-angular.<platform>
+```
+
+# To run the plain Nativescript demo
+
+```
+cd src
+npm run demo.<platform>
+```
+
 ## License
 
-Apache License Version 2.0, January 2004
+MIT
