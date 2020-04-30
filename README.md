@@ -47,6 +47,8 @@ registerElement('BottomSheet', () => BottomSheet);
 ```
 #### Typescript
 
+#### Typescript
+
 ``` typescript
     onStateChange(args) {
         const {eventName, object, state} = args;
