@@ -6,7 +6,7 @@ import { Size } from "@nativescript/core/ui/core/view/view";
 import { PercentLength} from "@nativescript/core/ui/styling/style-properties";
 import {animate} from "./animation-helper";
 
-enum BottomSheetState {
+export enum BottomSheetState {
     COLLAPSED,
     HALP_EXPANDED, // later will be changed to SETTLING
     EXPANDED,
