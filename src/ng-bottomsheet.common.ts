@@ -1,33 +1,72 @@
 import {
-    GridLayout, StackLayout, Application, Screen,
-    GestureStateTypes, GestureTypes, PanGestureEventData
+    GridLayout, StackLayout, Screen,
+    GestureStateTypes, GestureTypes, PanGestureEventData, Utils, View
 } from "@nativescript/core";
+import { Size } from "@nativescript/core/ui/core/view/view";
+import { PercentLength} from "@nativescript/core/ui/styling/style-properties";
 import {animate} from "./animation-helper";
 
-export enum BottomSheetState {
+enum BottomSheetState {
     COLLAPSED,
-    HALP_EXPANDED,
-    EXPANDED
+    HALP_EXPANDED, // later will be changed to SETTLING
+    EXPANDED,
+    // DRAGGING,
+    // HIDDEN
 }
 
 export class BottomSheetBase extends GridLayout {
-    public static onStateChangeEvent: string = "stateChange";
+    static onStateChangeEvent: string = "stateChange";
     state: BottomSheetState = BottomSheetState.COLLAPSED;
+
+    private skipExpanded: boolean = false;
     private stateDIPs: number;
+    private _maxHeight: number;
+    // private _settlingStateSize: number;
+    // private _collapsedStateSize: number;
+
+    // PARSINGS PercenLength value to number
+    set maxHeight(length: any) {
+        length = PercentLength.parse(length);
+        if (typeof length === "object") {
+            switch (length.unit) {
+                case "%" :
+                    this._maxHeight = this.getBottomSheetSize().height * (length.value * 100) / 100;
+                    break;
+                case "px" :
+                    this._maxHeight = Utils.layout.toDeviceIndependentPixels(length.value);
+                    break;
+                case "dip" :
+                    this._maxHeight = length.value;
+                    break;
+                default :
+                    this._maxHeight = NaN;
+            }
+            return;
+        }
+        if (typeof length === "string") {
+            this._maxHeight = NaN;
+            return;
+        }
+
+        this._maxHeight = length;
+    }
+
+    get maxHeight(): any {
+        return this._maxHeight;
+    }
 
     constructor() {
         super();
-
         this.height = { unit: "dip", value: Screen.mainScreen.heightDIPs * 20 / 100 };
         this.verticalAlignment = "bottom";
 
         // if (Application.android) {
-            this.backgroundColor = "white";
-            this.androidElevation = 12;
-            this.borderTopLeftRadius = 20;
-            this.borderTopRightRadius = 20;
+        this.backgroundColor = "white";
+        this.androidElevation = 12;
+        this.borderTopLeftRadius = 20;
+        this.borderTopRightRadius = 20;
         // } else {
-        //    this.on("loaded", () => {
+        // this.on("loaded", () => {
                 // let shadowLayer = CAShapeLayer.alloc().init();
                 // let cgPath = UIBezierPath.bezierPathWithRoundedRectByRoundingCornersCornerRadii(this.ios.bounds, 3, CGSizeMake(8, 8)).CGPath;
                 // shadowLayer.path = cgPath;
@@ -47,10 +86,10 @@ export class BottomSheetBase extends GridLayout {
                 // this.ios.layer.addSublayer(shadowLayer);
             // });
         // }
-        const bottomSheetDragView = new StackLayout();
-        this.addChild(bottomSheetDragView);
-        bottomSheetDragView.addChild(new StackLayout());
-        bottomSheetDragView.getChildAt(0).addCss(
+        const peek = new StackLayout();
+        this.addChild(peek);
+        peek.addChild(new StackLayout());
+        peek.getChildAt(0).addCss(
             `StackLayout {
                 background-color: #a0a0a0;
                 height: 5;
@@ -65,25 +104,43 @@ export class BottomSheetBase extends GridLayout {
             switch (state) {
                 case GestureStateTypes.began :
                     this.stateDIPs = this.getActualSize().height;
-                    if (this.state === BottomSheetState.EXPANDED) {
-                        // if (Application.android) {
-                            this.borderTopLeftRadius = 20;
-                            this.borderTopRightRadius = 20;
-                        // }
-                    }
                     break;
 
                 case GestureStateTypes.changed :
-                    this.height = { unit: "dip", value: this.stateDIPs - deltaY };
+                    if (deltaY < 0 && deltaY - deltaY * 2 + this.stateDIPs >= this.getBottomSheetSize().height) {
+                        break;
+                    }
+                    if (this.state === BottomSheetState.EXPANDED && deltaY > 0) {
+                        // if (Application.android) {
+                        this.borderTopLeftRadius = 20;
+                        this.borderTopRightRadius = 20;
+                        this.androidElevation = 12;
+                        // }
+                    }
+
+                    // later 50% of BottomSheet height will be changed to _settlingStateSize
+                    if (!this.skipExpanded || deltaY > 0 ||
+                        (deltaY < 0 && deltaY - deltaY * 2 + this.stateDIPs <= this.getBottomSheetSize().height * 50 / 100)
+                    ) {
+                        this.height = { unit: "dip", value: this.stateDIPs - deltaY };
+                    }
+
                     break;
 
                 case GestureStateTypes.ended || GestureStateTypes.cancelled :
                     this.stateDIPs = this.getActualSize().height;
-                    if (this.stateDIPs <= Screen.mainScreen.heightDIPs * 30 / 100) {
+
+                    // later 30% of BottomSheet height will be changed to another value
+                    if (this.stateDIPs <= this.getBottomSheetSize().height * 30 / 100) {
                         this.setState(BottomSheetState.COLLAPSED);
-                    } else if (this.stateDIPs <= Screen.mainScreen.heightDIPs * 70 / 100) {
+                        break;
+                    }
+                    // later 50% of BottomSheet height will be changed to to another value
+                    if (this.stateDIPs <= this.getBottomSheetSize().height * 70 / 100) {
                         this.setState(BottomSheetState.HALP_EXPANDED);
-                    } else if (this.stateDIPs > Screen.mainScreen.heightDIPs * 70 / 100) {
+                        break;
+                    }
+                    if (!this.skipExpanded) {
                         this.setState(BottomSheetState.EXPANDED);
                     }
                     break;
@@ -91,34 +148,45 @@ export class BottomSheetBase extends GridLayout {
         });
     }
 
-    setState(state: BottomSheetState) {
+    setState(state: BottomSheetState): void {
         let newStateDIPs: number;
+
         switch (state) {
             case BottomSheetState.COLLAPSED :
-                newStateDIPs = Screen.mainScreen.heightDIPs * 20 / 100;
+                // later 20% of BottomSheet height will be changed to _collapsedStateSize
+                newStateDIPs = this.getBottomSheetSize().height * 20 / 100;
                 this.state = BottomSheetState.COLLAPSED;
                 // if (Application.android) {
-                    this.borderTopLeftRadius = 20;
-                    this.borderTopRightRadius = 20;
+                this.borderTopLeftRadius = 20;
+                this.borderTopRightRadius = 20;
+                this.androidElevation = 12;
                 // }
                 break;
+
             case BottomSheetState.HALP_EXPANDED :
-                newStateDIPs = Screen.mainScreen.heightDIPs * 50 / 100;
+                // later 50% of BottomSheet height will be changed to _settlingStateSize
+                newStateDIPs = this.getBottomSheetSize().height * 50 / 100;
                 this.state = BottomSheetState.HALP_EXPANDED;
                 // if (Application.android) {
-                    this.borderTopLeftRadius = 20;
-                    this.borderTopRightRadius = 20;
+                this.borderTopLeftRadius = 20;
+                this.borderTopRightRadius = 20;
+                this.androidElevation = 12;
                 // }
                 break;
+
             case BottomSheetState.EXPANDED :
-                newStateDIPs = Screen.mainScreen.heightDIPs * 105 / 100;
+                newStateDIPs = this.getBottomSheetSize().height;
                 this.state = BottomSheetState.EXPANDED;
                 // if (Application.android) {
-                    this.borderTopLeftRadius = 0;
-                    this.borderTopRightRadius = 0;
+                this.borderTopLeftRadius = 0;
+                this.borderTopRightRadius = 0;
+                this.androidElevation = 0;
                 // }
                 break;
+
+            default : return;
         }
+
         animate(200, [{
             getRange: () => {
                 return { from: this.stateDIPs, to: newStateDIPs };
@@ -128,6 +196,60 @@ export class BottomSheetBase extends GridLayout {
                 this.height = v;
             }
         }]);
+
         this.notify({eventName: BottomSheetBase.onStateChangeEvent, object: this, state: this.state});
+    }
+
+    setHideable(hideable: boolean): void {
+        // Sets whether this bottom sheet can hide when it is swiped down.
+        // here will be implementation ...
+    }
+
+    setPeekHeight(peekHeight: number): void {
+        // Sets the height of the bottom sheet when it is collapsed.
+        // here will be implementation ...
+    }
+
+    setSkipCollapsed(skipCollapsed: boolean): void {
+        // Sets whether this bottom sheet should skip the collapsed state when it is being hidden after it is expanded once.
+        // here will be implementation ...
+    }
+
+    setSkipExpanded(skipExpanded: boolean): void {
+        this.skipExpanded = skipExpanded;
+    }
+
+    getPeekHeight() {
+        // Gets the height of the bottom sheet when it is collapsed.
+        // here will be implementation ...
+    }
+
+    getSkipCollapsed() {
+        // Sets whether this bottom sheet should skip the collapsed state when it is being hidden after it is expanded once.
+        // here will be implementation ...
+    }
+
+    getState() {
+        //  Gets the current state of the bottom sheet.
+        // here will be implementaion ...
+    }
+
+    isHideable() {
+        // Gets whether this bottom sheet can hide when it is swiped down.
+        // here will be implementation ...
+    }
+
+    private getBottomSheetSize(): Size {
+        const marginTop = Utils.layout.toDeviceIndependentPixels(
+            PercentLength.toDevicePixels(this.marginTop, 0, 0)
+        ) || 0;
+        const differenceBetweenMaxHeightAndScreenHeight =
+            this.maxHeight ? Screen.mainScreen.heightDIPs - this.maxHeight : 0;
+
+        return {
+            height: Screen.mainScreen.heightDIPs - marginTop -
+                differenceBetweenMaxHeightAndScreenHeight,
+            width: this.getActualSize().width
+        };
     }
 }
