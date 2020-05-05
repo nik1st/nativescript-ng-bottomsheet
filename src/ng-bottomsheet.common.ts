@@ -68,8 +68,8 @@ export class BottomSheetBase extends GridLayout {
 
         this.on("unloaded", () => {
             this.state = BottomSheetState.HIDDEN;
-            this.getChildAt(0).off("pan", this.panGestureHandler);
             this.notify({eventName: BottomSheetBase.onStateChangeEvent, object: this, state: this.state});
+            this.getChildAt(0).off("pan", this.panGestureHandler);
         });
     }
 
@@ -78,20 +78,23 @@ export class BottomSheetBase extends GridLayout {
         switch (state) {
             case GestureStateTypes.began :
                 this.stateDIPs = this.getActualSize().height;
+
+                this.notify({eventName: BottomSheetBase.onStateChangeEvent,
+                    object: this, state: BottomSheetState.DRAGGING, startState: this.state}
+                );
                 break;
 
             case GestureStateTypes.changed :
                 if (deltaY < 0 && deltaY - deltaY * 2 + this.stateDIPs >= this.getBottomSheetSize().height) {
                     break;
                 }
-                if (this.state === BottomSheetState.EXPANDED && deltaY > 0) {
+                if (deltaY > 0) {
                     this.setBorders(20, 12);
-
                 }
 
-                // later 50% of BottomSheet height will be changed to _settlingStateSize
+                const settlingDIPs = this.settlingHeight || this.getBottomSheetSize().height * 50 / 100;
                 if (this.canExpand || deltaY > 0 ||
-                    (deltaY < 0 && deltaY - deltaY * 2 + this.stateDIPs <= this.getBottomSheetSize().height * 50 / 100)
+                    (deltaY < 0 && deltaY - deltaY * 2 + this.stateDIPs <= settlingDIPs)
                 ) {
                     this.height = { unit: "dip", value: this.stateDIPs - deltaY };
                 }
@@ -159,9 +162,12 @@ export class BottomSheetBase extends GridLayout {
             step: (v) => {
                 this.height = v;
             }
-        }]);
+        }]).then(() => {
+            this.notify(
+                {eventName: BottomSheetBase.onStateChangeEvent, object: this, state: this.state}
+            );
+        });
 
-        this.notify({eventName: BottomSheetBase.onStateChangeEvent, object: this, state: this.state});
     }
 
     private setBorders(topRadius, elevation?) {
