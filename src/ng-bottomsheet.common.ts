@@ -1,92 +1,51 @@
 import {
-    GridLayout, StackLayout, Screen,
-    GestureStateTypes, GestureTypes, PanGestureEventData, Utils, View
+    GridLayout, StackLayout, Screen, Application,
+    GestureStateTypes, GestureTypes, PanGestureEventData, Utils
 } from "@nativescript/core";
+import { Property } from "@nativescript/core/ui/content-view";
 import { Size } from "@nativescript/core/ui/core/view/view";
-import { PercentLength} from "@nativescript/core/ui/styling/style-properties";
-import {animate} from "./animation-helper";
+import { PercentLength } from "@nativescript/core/ui/styling/style-properties";
+import { animate } from "./animation-helper";
+import { Peek } from "./childs/peek/peek";
 
 export enum BottomSheetState {
     COLLAPSED,
-    HALP_EXPANDED, // later will be changed to SETTLING
+    SETTLING,
     EXPANDED,
-    // DRAGGING,
-    // HIDDEN
+    DRAGGING,
+    HIDDEN
 }
+
+let _size: Size;
 
 export class BottomSheetBase extends GridLayout {
     static onStateChangeEvent: string = "stateChange";
     state: BottomSheetState = BottomSheetState.COLLAPSED;
 
-    private skipExpanded: boolean = false;
+    maxHeight: number;
+    canExpand: boolean = true;
+
+    settlingHeight: number;
+    settlingWidth: number;
+
+    collapsedHeight: number;
+    collapsedWidth: number;
+
+    peekHeight: number;
+
     private stateDIPs: number;
-    private _maxHeight: number;
-    // private _settlingStateSize: number;
-    // private _collapsedStateSize: number;
-
-    // PARSINGS PercenLength value to number
-    set maxHeight(length: any) {
-        length = PercentLength.parse(length);
-        if (typeof length === "object") {
-            switch (length.unit) {
-                case "%" :
-                    this._maxHeight = this.getBottomSheetSize().height * (length.value * 100) / 100;
-                    break;
-                case "px" :
-                    this._maxHeight = Utils.layout.toDeviceIndependentPixels(length.value);
-                    break;
-                case "dip" :
-                    this._maxHeight = length.value;
-                    break;
-                default :
-                    this._maxHeight = NaN;
-            }
-            return;
-        }
-        if (typeof length === "string") {
-            this._maxHeight = NaN;
-            return;
-        }
-
-        this._maxHeight = length;
-    }
-
-    get maxHeight(): any {
-        return this._maxHeight;
-    }
 
     constructor() {
         super();
-        this.height = { unit: "dip", value: Screen.mainScreen.heightDIPs * 20 / 100 };
+        _size = this.getBottomSheetSize();
+        this.height = { unit: "dip", value: this.getBottomSheetSize().height * 20 / 100 };
         this.verticalAlignment = "bottom";
-
-        // if (Application.android) {
         this.backgroundColor = "white";
         this.androidElevation = 12;
         this.borderTopLeftRadius = 20;
         this.borderTopRightRadius = 20;
-        // } else {
-        // this.on("loaded", () => {
-                // let shadowLayer = CAShapeLayer.alloc().init();
-                // let cgPath = UIBezierPath.bezierPathWithRoundedRectByRoundingCornersCornerRadii(this.ios.bounds, 3, CGSizeMake(8, 8)).CGPath;
-                // shadowLayer.path = cgPath;
-                // shadowLayer.fillColor = UIColor.whiteColor.CGColor;
-                // shadowLayer.shadowColor = UIColor.blackColor.CGColor;
-                // shadowLayer.shadowPath = cgPath;
-                // shadowLayer.shadowOffset = CGSizeMake(2.6, 2.6);
-                // shadowLayer.shadowOpacity = 0.8;
-                // shadowLayer.shadowRadius = 8;
-                // this.ios.layer.masksToBounds = true;
-                // this.ios.layer.backgroundColor = UIColor.whiteColor.CGColor;
-                // this.ios.layer.maskedCorners = 3;
-                // this.ios.layer.shadowOffset = CGSizeMake(0, 1);
-                // this.ios.layer.shadowOpacity = .4;
-                // this.ios.layer.shadowRadius = 5;
-                // this.ios.layer.cornerRadius = 20;
-                // this.ios.layer.addSublayer(shadowLayer);
-            // });
-        // }
-        const peek = new StackLayout();
+
+        const peek = new Peek();
         this.addChild(peek);
         peek.addChild(new StackLayout());
         peek.getChildAt(0).addCss(
@@ -99,53 +58,72 @@ export class BottomSheetBase extends GridLayout {
             }`
         );
 
-        this.getChildAt(0).on(GestureTypes.pan, (args: PanGestureEventData) => {
-            const { state, deltaY  } = args;
-            switch (state) {
-                case GestureStateTypes.began :
-                    this.stateDIPs = this.getActualSize().height;
-                    break;
-
-                case GestureStateTypes.changed :
-                    if (deltaY < 0 && deltaY - deltaY * 2 + this.stateDIPs >= this.getBottomSheetSize().height) {
-                        break;
-                    }
-                    if (this.state === BottomSheetState.EXPANDED && deltaY > 0) {
-                        // if (Application.android) {
-                        this.borderTopLeftRadius = 20;
-                        this.borderTopRightRadius = 20;
-                        this.androidElevation = 12;
-                        // }
-                    }
-
-                    // later 50% of BottomSheet height will be changed to _settlingStateSize
-                    if (!this.skipExpanded || deltaY > 0 ||
-                        (deltaY < 0 && deltaY - deltaY * 2 + this.stateDIPs <= this.getBottomSheetSize().height * 50 / 100)
-                    ) {
-                        this.height = { unit: "dip", value: this.stateDIPs - deltaY };
-                    }
-
-                    break;
-
-                case GestureStateTypes.ended || GestureStateTypes.cancelled :
-                    this.stateDIPs = this.getActualSize().height;
-
-                    // later 30% of BottomSheet height will be changed to another value
-                    if (this.stateDIPs <= this.getBottomSheetSize().height * 30 / 100) {
-                        this.setState(BottomSheetState.COLLAPSED);
-                        break;
-                    }
-                    // later 50% of BottomSheet height will be changed to to another value
-                    if (this.stateDIPs <= this.getBottomSheetSize().height * 70 / 100) {
-                        this.setState(BottomSheetState.HALP_EXPANDED);
-                        break;
-                    }
-                    if (!this.skipExpanded) {
-                        this.setState(BottomSheetState.EXPANDED);
-                    }
-                    break;
-            }
+        this.on("loaded", () => {
+            this.state = BottomSheetState.COLLAPSED;
+            this.notify({eventName: BottomSheetBase.onStateChangeEvent, object: this, state: this.state});
+            this.getChildAt(0).on(GestureTypes.pan, this.panGestureHandler);
+            // this.getViewById("Peek").on("pan", this.panGestureHandler);
+            // this.getViewById("InfoView").notify({eventName: "getPeekHeight", object: this.getViewById("Peek").style});
         });
+
+        this.on("unloaded", () => {
+            this.state = BottomSheetState.HIDDEN;
+            this.getChildAt(0).off("pan", this.panGestureHandler);
+            this.notify({eventName: BottomSheetBase.onStateChangeEvent, object: this, state: this.state});
+        });
+    }
+
+    private panGestureHandler = (args: PanGestureEventData) => {
+        const { state, deltaY } = args;
+        switch (state) {
+            case GestureStateTypes.began :
+                this.stateDIPs = this.getActualSize().height;
+                break;
+
+            case GestureStateTypes.changed :
+                if (deltaY < 0 && deltaY - deltaY * 2 + this.stateDIPs >= this.getBottomSheetSize().height) {
+                    break;
+                }
+                if (this.state === BottomSheetState.EXPANDED && deltaY > 0) {
+                    this.setBorders(20, 12);
+
+                }
+
+                // later 50% of BottomSheet height will be changed to _settlingStateSize
+                if (this.canExpand || deltaY > 0 ||
+                    (deltaY < 0 && deltaY - deltaY * 2 + this.stateDIPs <= this.getBottomSheetSize().height * 50 / 100)
+                ) {
+                    this.height = { unit: "dip", value: this.stateDIPs - deltaY };
+                }
+
+                break;
+
+            case GestureStateTypes.ended || GestureStateTypes.cancelled :
+                this.stateDIPs = this.getActualSize().height;
+
+                const collapsedAndSettlingAverage = (
+                    (this.settlingHeight || this.getBottomSheetSize().height * 50 / 100)
+                    + (this.collapsedHeight || this.getBottomSheetSize().height * 20 / 100)
+                ) / 2;
+                // console.log((collapsedAndSettlingAverage / this.getBottomSheetSize().height) * 100);
+                const settlingAndExpandedAverage = (
+                    (this.settlingHeight || this.getBottomSheetSize().height * 50 / 100)
+                    + this.getBottomSheetSize().height
+                ) / 2;
+                // console.log((settlingAndExpandedAverage / this.getBottomSheetSize().height) * 100);
+                if (this.stateDIPs <= collapsedAndSettlingAverage) {
+                    this.setState(BottomSheetState.COLLAPSED);
+                    break;
+                }
+                if (this.stateDIPs <= settlingAndExpandedAverage) {
+                    this.setState(BottomSheetState.SETTLING);
+                    break;
+                }
+                if (this.canExpand) {
+                    this.setState(BottomSheetState.EXPANDED);
+                }
+                break;
+        }
     }
 
     setState(state: BottomSheetState): void {
@@ -153,40 +131,26 @@ export class BottomSheetBase extends GridLayout {
 
         switch (state) {
             case BottomSheetState.COLLAPSED :
-                // later 20% of BottomSheet height will be changed to _collapsedStateSize
-                newStateDIPs = this.getBottomSheetSize().height * 20 / 100;
+                newStateDIPs = this.collapsedHeight || this.getBottomSheetSize().height * 20 / 100;
                 this.state = BottomSheetState.COLLAPSED;
-                // if (Application.android) {
-                this.borderTopLeftRadius = 20;
-                this.borderTopRightRadius = 20;
-                this.androidElevation = 12;
-                // }
+                this.setBorders(20, 12);
                 break;
 
-            case BottomSheetState.HALP_EXPANDED :
-                // later 50% of BottomSheet height will be changed to _settlingStateSize
-                newStateDIPs = this.getBottomSheetSize().height * 50 / 100;
-                this.state = BottomSheetState.HALP_EXPANDED;
-                // if (Application.android) {
-                this.borderTopLeftRadius = 20;
-                this.borderTopRightRadius = 20;
-                this.androidElevation = 12;
-                // }
+            case BottomSheetState.SETTLING :
+                newStateDIPs = this.settlingHeight || this.getBottomSheetSize().height * 50 / 100;
+                this.state = BottomSheetState.SETTLING;
+                this.setBorders(20, 12);
                 break;
 
             case BottomSheetState.EXPANDED :
                 newStateDIPs = this.getBottomSheetSize().height;
                 this.state = BottomSheetState.EXPANDED;
-                // if (Application.android) {
-                this.borderTopLeftRadius = 0;
-                this.borderTopRightRadius = 0;
-                this.androidElevation = 0;
-                // }
+                this.setBorders(0, 0);
                 break;
 
             default : return;
         }
-
+        // later will ve added width animation
         animate(200, [{
             getRange: () => {
                 return { from: this.stateDIPs, to: newStateDIPs };
@@ -198,6 +162,39 @@ export class BottomSheetBase extends GridLayout {
         }]);
 
         this.notify({eventName: BottomSheetBase.onStateChangeEvent, object: this, state: this.state});
+    }
+
+    private setBorders(topRadius, elevation?) {
+        this.borderTopLeftRadius = topRadius;
+        this.borderTopRightRadius = topRadius;
+        this.androidElevation = elevation || 0;
+    }
+
+    private getBottomSheetSize(): Size {
+        const marginTop = Utils.layout.toDeviceIndependentPixels(
+            PercentLength.toDevicePixels(this.marginTop, 0, 0)
+        ) || 0;
+        const differenceBetweenMaxHeightAndScreenHeight =
+            this.maxHeight ? Screen.mainScreen.heightDIPs - this.maxHeight : 0;
+
+        let screenHeight: number;
+        if (Application.ios) {
+            screenHeight = Screen.mainScreen.heightDIPs -
+                Application.ios.nativeApp.windows[0].safeAreaInsets.top -
+                Application.ios.nativeApp.windows[0].safeAreaInsets.bottom;
+        } else {
+            screenHeight = Screen.mainScreen.heightDIPs -
+                Utils.android.getApplicationContext().getResources().getDimensionPixelSize(
+                    Utils.android.getApplicationContext().getResources().getIdentifier("status_bar_height", "dimen", "android")
+                ) /
+                Utils.android.getApplicationContext().getResources().getDisplayMetrics().density;
+        }
+
+        return {
+            height: screenHeight - marginTop -
+                differenceBetweenMaxHeightAndScreenHeight,
+            width: this.getActualSize().width
+        };
     }
 
     setHideable(hideable: boolean): void {
@@ -215,8 +212,8 @@ export class BottomSheetBase extends GridLayout {
         // here will be implementation ...
     }
 
-    setSkipExpanded(skipExpanded: boolean): void {
-        this.skipExpanded = skipExpanded;
+    setCanExpand(canExpand: boolean): void {
+        this.canExpand = canExpand;
     }
 
     getPeekHeight() {
@@ -238,18 +235,141 @@ export class BottomSheetBase extends GridLayout {
         // Gets whether this bottom sheet can hide when it is swiped down.
         // here will be implementation ...
     }
-
-    private getBottomSheetSize(): Size {
-        const marginTop = Utils.layout.toDeviceIndependentPixels(
-            PercentLength.toDevicePixels(this.marginTop, 0, 0)
-        ) || 0;
-        const differenceBetweenMaxHeightAndScreenHeight =
-            this.maxHeight ? Screen.mainScreen.heightDIPs - this.maxHeight : 0;
-
-        return {
-            height: Screen.mainScreen.heightDIPs - marginTop -
-                differenceBetweenMaxHeightAndScreenHeight,
-            width: this.getActualSize().width
-        };
-    }
 }
+
+export const canExpand = new Property<BottomSheetBase, boolean>({
+    name: "canExpand",
+    valueConverter: value => value === 'true'
+});
+canExpand.register(BottomSheetBase);
+
+export const maxHeightProperty = new Property<BottomSheetBase, number>({
+    name: "maxHeight",
+    valueConverter: value => {
+        const length = PercentLength.parse(value);
+        if (typeof length === "object") {
+            switch (length.unit) {
+                case "%" :
+                    return _size.height * (length.value * 100) / 100;
+                case "px" :
+                    return Utils.layout.toDeviceIndependentPixels(length.value);
+                case "dip" :
+                    return length.value;
+                default :
+                    return NaN;
+            }
+        }
+        if (typeof length === "string") {
+            return NaN;
+        }
+
+        return length;
+    }
+});
+maxHeightProperty.register(BottomSheetBase);
+
+export const settlingWidth = new Property<BottomSheetBase, PercentLength>({
+    name: "settingWidth",
+    valueConverter: value => {
+        const length = PercentLength.parse(value);
+        if (typeof length === "object") {
+            switch (length.unit) {
+                case "%" :
+                    return _size.width * (length.value * 100) / 100;
+                case "px" :
+                    return Utils.layout.toDeviceIndependentPixels(length.value);
+                case "dip" :
+                    return length.value;
+                default :
+                    return NaN;
+            }
+        }
+        if (typeof length === "string") {
+            return NaN;
+        }
+
+        return length;
+    }
+});
+settlingWidth.register(BottomSheetBase);
+
+export const settlingHeight = new Property<BottomSheetBase, PercentLength>({
+    name: "settlingHeight",
+    valueConverter: value => {
+        const length = PercentLength.parse(value);
+        if (typeof length === "object") {
+            switch (length.unit) {
+                case "%" :
+                    return _size.height * (length.value * 100) / 100;
+                case "px" :
+                    return Utils.layout.toDeviceIndependentPixels(length.value);
+                case "dip" :
+                    return length.value;
+                default :
+                    return NaN;
+            }
+        }
+        if (typeof length === "string") {
+            return NaN;
+        }
+
+        return length;
+    }
+});
+settlingHeight.register(BottomSheetBase);
+
+export const collapsedWidth = new Property<BottomSheetBase, PercentLength>({
+    name: "collapsedWidth",
+    valueConverter: value => {
+        const length = PercentLength.parse(value);
+        if (typeof length === "object") {
+            switch (length.unit) {
+                case "%" :
+                    return _size.width * (length.value * 100) / 100;
+                case "px" :
+                    return Utils.layout.toDeviceIndependentPixels(length.value);
+                case "dip" :
+                    return length.value;
+                default :
+                    return NaN;
+            }
+        }
+        if (typeof length === "string") {
+            return NaN;
+        }
+
+        return length;
+    }
+});
+collapsedWidth.register(BottomSheetBase);
+
+export const collapsedHeight = new Property<BottomSheetBase, PercentLength>({
+    name: "collapsedHeight",
+    valueConverter: value => {
+        const length = PercentLength.parse(value);
+        if (typeof length === "object") {
+            switch (length.unit) {
+                case "%" :
+                    return _size.height * (length.value * 100) / 100;
+                case "px" :
+                    return Utils.layout.toDeviceIndependentPixels(length.value);
+                case "dip" :
+                    return length.value;
+                default :
+                    return NaN;
+            }
+        }
+        if (typeof length === "string") {
+            return NaN;
+        }
+
+        return length;
+    }
+});
+collapsedHeight.register(BottomSheetBase);
+
+export const peekHeight = new Property<BottomSheetBase, PercentLength>({
+    name: "peekHeight",
+    valueConverter: value => parseInt(value)
+});
+peekHeight.register(BottomSheetBase);

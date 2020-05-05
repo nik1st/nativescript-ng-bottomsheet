@@ -1,5 +1,6 @@
 import { Component, OnInit, ElementRef, ViewChild, AfterViewInit } from "@angular/core";
-import { BottomSheetState, BottomSheet } from "../../../../src/ng-bottomsheet.d";
+import { BottomSheet } from "../../../../src/ng-bottomsheet";
+import { BottomSheetState } from "../../../../src/ng-bottomsheet.common";
 import { Screen, Page, Utils } from "@nativescript/core";
 
 @Component({
