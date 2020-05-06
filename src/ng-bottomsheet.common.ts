@@ -33,7 +33,7 @@ export class BottomSheetBase extends GridLayout {
 
     peekHeight: number;
 
-    private stateDIPs: number;
+    private stateDIPs: number = this.getActualSize().height;
 
     constructor() {
         super();
