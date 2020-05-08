@@ -1,6 +1,6 @@
 {
 	"name": "nativescript-ng-bottomsheet",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"description": "Nativescript Angular Bottom Sheet plugin",
 	"main": "ng-bottomsheet",
 	"typings": "index.d.ts",
