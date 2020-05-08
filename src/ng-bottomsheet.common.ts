@@ -38,7 +38,11 @@ export class BottomSheetBase extends GridLayout {
     constructor() {
         super();
         _size = this.getBottomSheetSize();
-        this.height = { unit: "dip", value: this.getBottomSheetSize().height * 20 / 100 };
+        this.height = {
+            unit: "dip",
+            value: this.collapsedHeight
+            || this.getBottomSheetSize().height * 20 / 100
+        };
         this.verticalAlignment = "bottom";
         this.backgroundColor = "white";
         this.androidElevation = 12;
