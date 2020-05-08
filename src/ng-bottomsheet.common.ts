@@ -156,7 +156,10 @@ export class BottomSheetBase extends GridLayout {
         // later will ve added width animation
         animate(200, [{
             getRange: () => {
-                return { from: this.stateDIPs, to: newStateDIPs };
+                return {
+                    from: this.stateDIPs || this.getActualSize().height,
+                    to: newStateDIPs
+                };
             },
             curve: (t) => t,
             step: (v) => {
