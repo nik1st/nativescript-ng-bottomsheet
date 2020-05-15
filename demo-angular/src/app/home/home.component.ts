@@ -27,7 +27,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     onStateChange(args) {
         const {eventName, object, state, startState} = args;
-        console.log(state);
-        console.log(startState);
+        // console.log(state);
+        // console.log(startState);
     }
 }
